@@ -42,10 +42,17 @@ gameScene.create = function () {
         enemy.speed = Math.random() * 2 + 1;
     }, this);
 
+    this.playerAlive = true;
+    this.cameras.main.resetFX();
+
 };
 
 
 gameScene.update = function () {
+
+    if(!this.playerAlive) {
+        return;
+    }
 
     if(this.input.activePointer.isDown) {
         this.player.x += this.playerSpeed;
@@ -68,15 +75,30 @@ gameScene.update = function () {
         if(enemies[i].y <= this.enemyMinY && enemies[i].speed < 0) {
             enemies[i].speed *= -1;
         }
+
+        if(Phaser.Geom.Intersects.RectangleToRectangle(this.player.getBounds(),
+            enemies[i].getBounds())) {
+            this.gameOver();
+            break;
+        }
+
     }
-
-
-
 
 }
 
 gameScene.gameOver = function () {
-    this.scene.restart();
+
+    this.playerAlive = false;
+    this.cameras.main.shake(500);
+
+    this.time.delayedCall(250, function () {
+        this.cameras.main.fade(250);
+    }, [], this);
+
+    this.time.delayedCall(500, function() {
+        this.scene.restart();
+
+    }, [], this);
 }
 
 let config = {
